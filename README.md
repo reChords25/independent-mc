@@ -18,3 +18,7 @@ Once finished, you should have a `start.bat` file to start the game.
 If you encounter any issues, try to fix them on their own first.  
 Then open an issue here and if you have, describe the solution.
 
+## Contributing
+Contributing is not wanted. This script is meant to work as-is.  
+I only published it to not gatekeep the idea and structure of the code.  
+If you want alpha and beta versions to be included, missing dependency versions to be handled in a better way etc. you can of course style the script to your needs.
