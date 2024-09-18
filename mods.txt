@@ -1,6 +1,7 @@
-# Enter the URLs of the mods you want to download here.
+# Enter the Modrinth URLs of the mods you want to download here.
 # See format below.
 # The script will automatically download the latest variant for the current configuration.
+# All dependencies will be downloaded as well, as long as they are available on Modrinth.
 # If the game crashes, that is mostly caused by mod incompatibility. Follow the on-screen instructions to fix them.
 
 # Tip: Keep the Fabric API mod if you use fabric, because many mods need it to run!
