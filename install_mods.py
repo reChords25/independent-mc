@@ -47,10 +47,10 @@ def get_mod_title(mod_id: str) -> str:
 
 def get_dependencies(mod_version: str, parent_mod_title: str) -> None:
     if not 'dependencies' in mod_version: return
-    count = len(mod_version['dependencies'])
+    count = sum(1 for item in mod_version['dependencies'] if item['dependency_type'] == 'required')
     if count == 0: return
     
-    print(f'[INFO] Found {count} {'dependency' if count == 1 else 'dependencies'} for {parent_mod_title}')
+    print(f'[INFO] Found {count} required {'dependency' if count == 1 else 'dependencies'} for {parent_mod_title}')
     i = 1
     for dependency in mod_version['dependencies']:
         if not (dependency['dependency_type'] == 'required' and dependency['project_id']): return
