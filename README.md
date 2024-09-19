@@ -1,5 +1,5 @@
 # independent-mc
-A tool to download and run minecraft fully portable on all Windows computers.
+A tool to download and run minecraft fully portable on all Windows computers. Uses portablemc for python as basis.
 
 ## How to use
 *First of all: You need to have python installed!*  
