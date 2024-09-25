@@ -6,3 +6,4 @@
 
 # Tip: Keep the Fabric API mod if you use fabric, because many mods need it to run!
 https://modrinth.com/mod/fabric-api
+https://modrinth.com/mod/zoomify
