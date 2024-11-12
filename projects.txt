@@ -1,0 +1,5 @@
+# Enter the Modrinth URLs of the projects (mods etc.) you want to download here, each in a separate line.
+# Format: e.g. https://modrinth.com/mod/fabric-api
+# The script will automatically download the latest variant for the current configuration.
+# All dependencies will be downloaded as well, as long as they are available on Modrinth.
+# If the game crashes, that is mostly caused by mod incompatibility. Follow the on-screen instructions to fix them.

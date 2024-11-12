@@ -1,21 +1,21 @@
 import os, sys, requests
 
-MODS_FILE = "mods.txt"
-MODS_FOLDER = os.getcwd() + "\\minecraft\\wd\\mods"
+PROJECTS_FILE = "projects.txt"
+INSTALLATION_FOLDER = os.getcwd() + "\\minecraft\\wd"
 LOADER_TYPE = sys.argv[1]
 MINECRAFT_VERSION = sys.argv[2]
 
 API_URL = "https://api.modrinth.com/v2"
-visited_mods = set()
+visited_projects = set()
 
-def get_mod_info(url: str) -> tuple[str, str]:
+def get_project_info(url: str) -> tuple[str, str]:
     response = requests.get(f'{API_URL}/project/{url.rstrip("/").split("/")[-1]}')
     if response.status_code != 200: return None
-    mod_info = response.json()
-    return mod_info['title'], mod_info['id']
+    project_info = response.json()
+    return project_info['title'], project_info['id']
 
-def get_latest(mod_id: str) -> str:
-    version_url = f'{API_URL}/project/{mod_id}/version'
+def get_latest(project_id: str) -> str:
+    version_url = f'{API_URL}/project/{project_id}/version'
     response = requests.get(version_url)
     
     if response.status_code != 200: return None
@@ -25,80 +25,80 @@ def get_latest(mod_id: str) -> str:
             return version
     return None
 
-def download_mod(version_info: str) -> str:
+def download_project(version_info: str) -> str:
     for file in version_info['files']:
-        if file['primary']:
-            download_url = file['url']
-            file_name = file['filename']
-            mod_path = os.path.join(MODS_FOLDER, file_name)
-            
-            with requests.get(download_url, stream=True) as r:
-                r.raise_for_status()
-                with open(mod_path, 'wb') as f:
-                    for chunk in r.iter_content(chunk_size=8192):
-                        f.write(chunk)
-            return file_name
+        if not file['primary']: continue
+        download_url = file['url']
+        file_name = file['filename']
+        project_path = os.path.join(INSTALLATION_FOLDER, file_name)
+        
+        with requests.get(download_url, stream=True) as r:
+            r.raise_for_status()
+            with open(project_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        return file_name
     return None
 
-def get_mod_title(mod_id: str) -> str:
-    response = requests.get(f'{API_URL}/project/{mod_id}')
+def get_project_title(project_id: str) -> str:
+    response = requests.get(f'{API_URL}/project/{project_id}')
     if response.status_code != 200: return None
     return response.json()['title']
 
-def get_dependencies(mod_version: str, parent_mod_title: str) -> None:
-    if not 'dependencies' in mod_version: return
-    count = sum(1 for item in mod_version['dependencies'] if item['dependency_type'] == 'required')
+def get_dependencies(project_version: str, parent_project_title: str) -> None:
+    if not 'dependencies' in project_version: return
+    count = sum(1 for item in project_version['dependencies'] if item['dependency_type'] == 'required')
     if count == 0: return
     
-    print(f'[INFO] Found {count} required {'dependency' if count == 1 else 'dependencies'} for {parent_mod_title}')
+    print(f'[INFO] Found {count} required {'dependency' if count == 1 else 'dependencies'} for {parent_project_title}')
     i = 1
-    for dependency in mod_version['dependencies']:
+    for dependency in project_version['dependencies']:
         if not (dependency['dependency_type'] == 'required' and dependency['project_id']): return
-        mod_id = dependency['project_id']
+        project_id = dependency['project_id']
 
-        if mod_id in visited_mods: continue
+        if project_id in visited_projects: continue
         
-        mod_title = get_mod_title(mod_id)
-        print(f'[INFO] Dependency {i}: {mod_title}')
+        project_title = get_project_title(project_id)
+        print(f'[INFO] Dependency {i}: {project_title}')
         
-        mod_version = get_latest(mod_id)
-        if not mod_version:
-            print(f'[ERROR] No compatible version found for dependent mod {mod_title}')
-            print(f'[INFO] You might have to delete the file for {parent_mod_title} yourself.')
+        project_version = get_latest(project_id)
+        if not project_version:
+            print(f'[ERROR] No compatible version found for dependent project {project_title}')
+            print(f'[INFO] You might have to delete the file for {parent_project_title} yourself.')
             return
-        print(f'[INFO] Downloading dependent mod {mod_title}')
-        file_name = download_mod(mod_version)
+        print(f'[INFO] Downloading dependent project {project_title}')
+        file_name = download_project(project_version)
         print(f'[INFO] Successfully downloaded as "{file_name}"')
-        visited_mods.add(mod_id)
-        get_dependencies(mod_version, mod_title)
+        visited_projects.add(project_id)
+        get_dependencies(project_version, project_title)
         i += 1
 
 
 if __name__ == "__main__":
-    if not os.path.exists(MODS_FOLDER):
-        os.makedirs(MODS_FOLDER)
-    if not os.path.exists(MODS_FILE):
-        print(f'[ERROR] Mods file "{MODS_FILE}" not found.')
-        print(f'[INFO] Create the file and paste the mod URLs or move it to the right directory.')
+    if not os.path.exists(INSTALLATION_FOLDER):
+        os.makedirs(INSTALLATION_FOLDER)
+    if not os.path.exists(PROJECTS_FILE):
+        print(f'[ERROR] Projects file "{PROJECTS_FILE}" not found.')
+        print(f'[INFO] Create the file and paste the project URLs or move it to the right directory.')
         exit()
     
-    with open(MODS_FILE, 'r') as f:
-        mod_urls = f.readlines()
+    with open(PROJECTS_FILE, 'r') as f:
+        project_urls = f.readlines()
     
-    for url in mod_urls:
+    for url in project_urls:
         url = url.strip()
         if not url or url[0] == '#': continue
         
-        mod_title, mod_id = get_mod_info(url)
-        if mod_id in visited_mods: continue
-        print(f'[INFO] Fetching mod info for {mod_title}')
-        mod_version = get_latest(mod_id)
-        if not mod_version:
-            print(f'[ERROR] No compatible version found for mod {mod_title}')
+        project_title, project_id = get_project_info(url)
+        if project_id in visited_projects: continue
+        print(f'[INFO] Fetching project info for {project_title}')
+        project_version = get_latest(project_id)
+        if not project_version:
+            print(f'[ERROR] No compatible version found for project {project_title}')
             continue
-        print(f'[INFO] Downloading {mod_title}')
-        file_name = download_mod(mod_version)
+        print(f'[INFO] Downloading {project_title}')
+        file_name = download_project(project_version)
         print(f'[INFO] Successfully downloaded as "{file_name}"')
-        visited_mods.add(mod_id)
+        visited_projects.add(project_id)
         
-        get_dependencies(mod_version, mod_title)
+        get_dependencies(project_version, project_title)
