@@ -2,3 +2,4 @@
 minecraft
 LICENSE
 *.mrpack
+__pycache__
