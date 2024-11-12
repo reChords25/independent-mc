@@ -32,7 +32,7 @@ echo[
 echo [INFO] Installing mods
 echo[
 "%venvpy%" -m pip install --no-input requests >NUL 2>NUL
-"%venvpy%" install_mods.py %loader_type% %mc_version%
+"%venvpy%" Download.py %loader_type% %mc_version%
 "%venvpy%" -m pip uninstall -y requests >NUL 2>NUL
 echo[
 
