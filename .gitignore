@@ -3,3 +3,4 @@ minecraft
 LICENSE
 *.mrpack
 __pycache__
+test*.*
