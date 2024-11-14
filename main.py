@@ -3,7 +3,7 @@ import os, sys, logging
 # Pathlib for better cross-compatibility in the end
 from pathlib import Path
 # Program-specific imports
-from .project import Project
+from project import Project
 
 # Configure logger
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
@@ -20,15 +20,65 @@ checked_projects = set()
 checked_project_versions = set()
 
 # Check for PROJECTS_FILE (where Mods etc. are defined)
-if not Path(PROJECTS_FILE).exists():
-  logger.error(f'Projects file "{PROJECTS_FILE}" not found')
-  logger.info('Create the file and paste the project URLs or move it to the correct directory')
-  sys.exit(1)
+def check_for_projects_file():
+  if not Path(PROJECTS_FILE).exists():
+    logger.error(f'Projects file "{PROJECTS_FILE}" not found')
+    logger.info('Create the file and paste the project URLs or move it to the correct directory')
+    sys.exit(1)
+
+def download_dependencies(p):
+  print('')
+  # Log dependency count
+  dependencies = p.get_req_dependencies()
+  if dependencies is None:
+    logger.info(f'No dependencies found')
+    return
+  count = len(dependencies)
+  logger.info(f'{count} {'dependency' if count == 1 else 'dependencies'} found for "{p.get_title()}"')
+
+  # For every dependency
+  for i, (d_id, d_version_id) in enumerate(dependencies, 1):
+    logger.info(f'Fetching project info for dependency no. {i}')
+    d = Project(d_id)
+    if not d:
+      logger.error(f'Could not fetch data for "{entry}"! Skipping. "{p.get_title()}" might not work correctly without!')
+      continue
+    logger.info(f'Dependency "{d.get_title()}" found')
+    
+    if d_version_id is None:
+      if d.get_id() in checked_projects:
+        logger.info(f'"{d.get_title()}" was already visited. Skipping!')
+        continue
+      if not d.has_version(MC_VERSION):
+        logger.error(f'"{d.get_title()}" might not work correctly without "{d.get_title()}"!')
+        continue
+      version = d.get_version(MC_VERSION, LOADER_TYPE)
+      if version is None:
+        logger.error(f'"{d.get_title()}" might not work correctly without "{d.get_title()}"!')
+      checked_projects.add(d.get_id())
+    else:
+      d.set_version(d_version_id)
+      version = d.get_version(MC_VERSION, LOADER_TYPE)
+      if d.get_id() + version['id'] in checked_project_versions:
+        logger.info(f'"{d.get_title()}" version ID "{version['id']}" was already visited. Skipping!')
+        continue
+      checked_projects.add(d.get_id())
+      checked_project_versions.add(d.get_id() + version['id'])
+      
+    d.download(INSTALLATION_FOLDER)
+    file_name = d.get_file_name()
+    if file_name:
+      logger.info(f'Successfully downloaded as "{file_name}"')
+    else:
+      logger.error(f'Error downloading "{p.get_title()}", version ID "{version['id']}"!')
+    download_dependencies(d)
+    
 
 # Read PROJECTS_FILE and create a new project for each valid URL / SLUG / ID
 with open(PROJECTS_FILE, 'r') as f:
   project_entries = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 for entry in project_entries:
+  print('\n')
   # Get info
   logger.info(f'Fetching project info for "{entry}"')
   p = Project(entry)
@@ -62,45 +112,7 @@ for entry in project_entries:
   else:
     logger.error(f'Error downloading "{p.get_title()}", version ID "{version['id']}"!')
 
-  # Log dependency count
-  dependencies = version.get_req_dependencies()
-  if dependencies is None:
-    logger.info(f'No dependencies found')
-    continue
-  logger.info(f'{len(dependencies)} dependencies found for {p.get_title()}')
+  download_dependencies(p)
 
-  # For every dependency
-  for i, (d_id, d_version_id) in enumerate(dependencies, 1):
-    logger.info(f'Fetching project info for dependency no. {i}')
-    d = Project(d_id)
-    if not d:
-      logger.error(f'Could not fetch data for "{entry}"! Skipping. {p.get_title()} might not work correctly without!')
-      continue
-    logger.info(f'Dependency "{d.get_title()}" found')
-    
-    if d_version_id is None:
-      if d.get_id() in checked_projects:
-        logger.info(f'"{d.get_title()} was already visited. Skipping!')
-      if not d.has_version():
-        logger.error(f'"{d.get_title()}" might not work correctly without "{d.get_title()}"!')
-        continue
-      version = d.get_version(MC_VERSION, LOADER_TYPE)
-      if version is None:
-        logger.error(f'"{d.get_title()}" might not work correctly without "{d.get_title()}"!')
-      checked_projects.add(d.get_id())
-    else:
-      d.set_version(d_version_id)
-      version = d.get_version()
-      if d.get_id() + version['id'] in checked_project_versions:
-        logger.info(f'"{d.get_title()} version ID {version['id']} was already visited. Skipping!')
-        continue
-      checked_projects.add(d.get_id())
-      checked_project_versions.add(d.get_id() + version['id'])
+
       
-    d.download(INSTALLATION_FOLDER)
-    file_name = d.get_file_name()
-    if file_name:
-      logger.info(f'Successfully downloaded as "{file_name}"')
-    else:
-      logger.error(f'Error downloading "{p.get_title()}", version ID "{version['id']}"!')
-        
