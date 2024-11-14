@@ -19,7 +19,11 @@ If you would like to install mods, resourcepacks, shaders or datapacks automatic
 1. You can add them to the `projects.txt` yourself (further instructions in the example file).
 2. You can take a pre-made template from the "project-templates" folder.
 3. You can copy an exported modpack from Modrinth into "projects-txt-generator" and execute the `generate.py` script. This will generate a projects file for you.  
-Note that the file you want to use has to be called `projects.txt` and be in the "additional-content-downloader" folder!  
+
+<!-- end of the list -->
+
+
+Note that the file you want to use has to be called `projects.txt` and be in the same folder as the `download.bat` file.  
 Also, the "install_mods" option in `download.bat` has to be set to "true".  
 
 ## Issues
