@@ -1,10 +1,12 @@
 @echo off
 set "loader_type=fabric"
 set "mc_version=1.21"
+set "install_mods=true"
+
 set "wd=%cd%\minecraft\wd"
 set "md=%cd%\minecraft\md"
 
-python --version>NUL
+python --version >NUL
 if ERRORLEVEL 1 GOTO NOPYTHON
 goto :HASPYTHON
 
@@ -29,12 +31,17 @@ echo[
 "%venvpy%" -m portablemc --main-dir "%md%" --work-dir "%wd%" --output human start %loader_type%:%mc_version% --dry
 echo[
 
-echo [INFO] Installing mods
-echo[
-"%venvpy%" -m pip install --no-input requests >NUL 2>NUL
-"%venvpy%" main.py %loader_type% %mc_version%
-"%venvpy%" -m pip uninstall -y requests >NUL 2>NUL
-echo[
+if "%install_mods%%" == "true" (
+    echo [INFO] Installing additional content
+    echo[
+    "%venvpy%" -m pip install --no-input requests >NUL 2>NUL
+    "%venvpy%" additional-content-downloader\main.py %loader_type% %mc_version%
+    "%venvpy%" -m pip uninstall -y requests >NUL 2>NUL
+    echo[
+) else if "%install_mods%%" == "false" (
+    echo [INFO] Skipping additional content installation
+    echo[
+)
 
 echo [INFO] Creating start.bat file
 (
