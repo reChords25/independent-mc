@@ -1,0 +1,24 @@
+# Starter template for mods by reChords25
+# Template "performance-with-config" - the main performance mods with some quality-of-life config mods
+# These mods do not create files other than global configs
+
+https://modrinth.com/mod/sodium
+https://modrinth.com/mod/entityculling
+https://modrinth.com/mod/modmenu
+https://modrinth.com/mod/lithium
+https://modrinth.com/mod/indium
+https://modrinth.com/mod/immediatelyfast
+https://modrinth.com/mod/sodium-extra
+https://modrinth.com/mod/reeses-sodium-options
+https://modrinth.com/mod/dynamic-fps
+# Remove when networking errors occur
+https://modrinth.com/mod/krypton
+# Only for 1.19.4 and earlier
+# https://modrinth.com/mod/lazydfu
+# https://modrinth.com/mod/starlight
+# For Fabric
+https://modrinth.com/mod/c2me-fabric
+https://modrinth.com/mod/controlling
+# Instead of Starlight from 1.21 on, especially useful with C2ME
+https://modrinth.com/mod/scalablelux
+https://modrinth.com/mod/noisium
