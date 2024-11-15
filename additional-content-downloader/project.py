@@ -1,7 +1,6 @@
-import os, requests, logging
+import os, requests
 from pathlib import Path
-
-logger = logging.getLogger(__name__)
+import util
 
 class Project:
   def __init__(self, entry):
@@ -16,6 +15,7 @@ class Project:
     self.valid_for_client = True if p_info['client_side'] in ['required', 'optional'] else False
     self.version = None
     self.file_name = None
+    self.file_size = None
 
   def get_title(self) -> str:
     return self.title
@@ -33,13 +33,17 @@ class Project:
     if self.version is None: return None
     return self.file_name
   
+  def get_file_size(self) -> str:
+    if self.file_name is None: return None
+    return self.file_size
+  
   def has_version(self, mc_version) -> bool:
     if self.type not in ['mod', 'datapack']: return True
     if mc_version in self.mc_versions:
-      logger.info(f'Compatible version found')
+      print(f'[INFO] Compatible version found')
       return True
     else:
-      logger.error(f'No compatible version found. Skipping!')
+      print(f'[ERROR] No compatible version found. Skipping!')
       return False
 
   def get_req_dependencies(self) -> list[list[str, str | None]] | None:
@@ -68,13 +72,13 @@ class Project:
             return version
         for version in versions:
           if 'iris' in version['loaders'] or 'minecraft' in version['loaders'] and version['version_type'] == 'release':
-            logger.info(f'No current version found for selected Minecraft version, installing version for {version['game_versions'][-1]} anyway')
+            print(f'[INFO] No current version found for selected Minecraft version, installing version for {version['game_versions'][-1]} anyway')
             self.version = version
             return version
       case _:
-        logger.error(f'Project type not (yet) supported!')
+        print(f'[ERROR] Project type not (yet) supported!')
         return None
-    logger.error('Correct version SOMEHOW could not be found (no release or wrong loader)!')
+    print(f'[ERROR] Correct version SOMEHOW could not be found (no release or wrong loader)!')
     return None
   
   def set_version(self, version_id: str) -> str | None:
@@ -98,13 +102,16 @@ class Project:
       download_url = file['url']
       file_name = file['filename']
       file_size = file['size']
-
-      logger.info(f'Downloading "{self.get_title()}", approx. {f'{file_size / 1000:.1f}KB' if file_size < 1000000 else f'{file_size / 1000000:.1f}MB'} in total')
       
+      downloaded_bytes = 0
       with requests.get(download_url, stream = True) as r:
         r.raise_for_status()
         with open(os.path.join(destination_path, file_name), 'wb') as f:
           for chunk in r.iter_content(chunk_size = 8192):
+            print(f'[INFO] Downloading "{self.get_title()}", approx. {util.convert_file_size(file_size)} in total ({round((downloaded_bytes / file_size)  * 100)}%)', end='\r')
             f.write(chunk)
+            downloaded_bytes += len(chunk)
+        print(f'[INFO] Downloading "{self.get_title()}", approx. {util.convert_file_size(file_size)} in total (100%)', end='\n')
       
       self.file_name = file_name
+      self.file_size = file_size
