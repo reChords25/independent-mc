@@ -1,6 +1,7 @@
 .venv
 minecraft
+__pycache__
 LICENSE
 *.mrpack
-__pycache__
 test*.*
+start.bat
